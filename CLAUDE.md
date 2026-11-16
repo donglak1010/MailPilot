@@ -84,3 +84,21 @@ Local dev login and test accounts are documented at the top of `supabase/seed.sq
 3. `send` ⇒ call SES ⇒ `complete_send` or `fail_send(permanent?)`; `defer` ⇒ `queue_defer(msg, delay)`.
 4. Cron: `enqueue_due_campaigns`, `enqueue_due_sequence_steps`, `mark_stale_sends_ambiguous`, `finalize_campaigns`.
 5. SES events (SNS) ⇒ `webhook_inbox` ⇒ `record_email_event` (idempotent on provider event id).
+
+Implementation (0004_campaign_sending.sql + functions):
+- Client actions go through RPCs that check roles themselves: `start_campaign`, `schedule_campaign`, `resume_campaign`
+  (owner/admin), `pause_campaign`, `cancel_campaign` (any member). All share `private.campaign_preflight` (verified sender,
+  subject/content, `{{unsubscribe_url}}`, postal address, non-empty audience, monthly quota). Errors carry the code in `hint`
+  (mapped in `src/lib/supabase/errors.ts`).
+- Worker trigger: `private.kick_worker()` → `pg_net` POST to `send-worker` with `x-worker-secret`; run by cron
+  `mp-send-worker` every minute and right after start/resume. Needs Vault secrets `mp_functions_url`, `mp_worker_secret`
+  (local values in `seed.sql`; hosted: see `docs/aws-ses-setup.md`). Missing secrets ⇒ silent no-op.
+- `send-worker`: single instance via `acquire_worker_lease`; time budget 45 s; rate `SES_MAX_SEND_RATE`/s; transient SES
+  errors ⇒ `fail_send(false)` + backoff with jitter (max 6 reads); network errors after the request ⇒ left `sending`
+  (→ ambiguous). Note: `claim_send` counts usage before SES, so retries over-count `emails_sent` slightly (conservative).
+- `unsubscribe` (public): POST with HMAC token (`_shared/unsubscribe-token.ts`); GET only redirects to the app page
+  `/unsubscribe` (link scanners must not unsubscribe people). Emails carry `List-Unsubscribe` + `-Post` one-click headers.
+- `ses-events` (public): SNS signature verified with WebCrypto (`_shared/sns.ts`), topic must equal `SES_EVENTS_TOPIC_ARN`.
+- Merge-tag rendering lives in `supabase/functions/_shared/render.ts` and is imported by the app as `@shared/render`
+  (preview = exactly what the worker sends). Keep that file free of Deno/npm imports.
+- Functions with `verify_jwt = false` are listed in `supabase/config.toml`; they must authenticate requests themselves.

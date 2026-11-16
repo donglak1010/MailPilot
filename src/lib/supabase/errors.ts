@@ -7,6 +7,29 @@ const KNOWN: Record<string, string> = {
   import_not_found: 'Import not found.',
   import_not_open: 'This import has already finished.',
   list_not_found: 'The selected list no longer exists.',
+  // campaign sending (0004_campaign_sending.sql)
+  campaign_not_found: 'Campaign not found.',
+  not_allowed: 'Only workspace owners and admins can do this.',
+  workspace_sending_disabled: 'Sending is paused for this workspace.',
+  sender_not_verified: 'Choose a From address on a verified sending domain.',
+  missing_subject: 'Add a subject line.',
+  missing_content: 'Add the email content.',
+  missing_unsubscribe_placeholder: 'The email content must contain the {{unsubscribe_url}} link.',
+  missing_postal_address: 'Add your postal address in Settings — it is required in every marketing email.',
+  no_audience: 'Choose at least one list to send to.',
+  empty_audience: 'The selected lists have no subscribed contacts.',
+  monthly_quota_insufficient: 'Not enough monthly sending quota left for this audience.',
+  campaign_not_startable: 'This campaign has already been started.',
+  campaign_not_schedulable: 'Only draft or scheduled campaigns can be scheduled.',
+  invalid_schedule_time: 'Pick a time at least 2 minutes from now and within a year.',
+  campaign_not_sending: 'This campaign is not sending.',
+  campaign_not_paused: 'This campaign is not paused.',
+  campaign_not_cancellable: 'This campaign can no longer be cancelled.',
+}
+
+/** User-facing text for a campaign preflight / RPC error code. */
+export function knownErrorMessage(code: string): string | undefined {
+  return KNOWN[code]
 }
 
 /** Turn a PostgREST/Postgres error into a short, user-safe message. */

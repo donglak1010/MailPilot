@@ -162,7 +162,7 @@ reset role;
 -- ---------------------------------------------------------------------
 -- Scheduled jobs registered
 -- ---------------------------------------------------------------------
-select is((select count(*)::int from cron.job where jobname like 'mp-%'), 6, 'six pg_cron maintenance jobs are scheduled');
+select is((select count(*)::int from cron.job where jobname like 'mp-%'), 7, 'seven pg_cron jobs are scheduled');
 
 select * from finish();
 rollback;

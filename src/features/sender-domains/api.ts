@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { FunctionsHttpError } from '@supabase/supabase-js'
 import { getSupabase } from '@/lib/supabase/client'
+import { invokeFunction } from '@/lib/supabase/functions'
 import type { Enums, Tables } from '@/types/app'
 
 export type DomainStatus = Enums<'domain_status'>
@@ -65,15 +65,6 @@ export function useSesAccount(workspaceId: string) {
   })
 }
 
-/** Error with the structured `{ error: { code, message } }` returned by the Edge Function. */
-export class FunctionError extends Error {
-  readonly code: string
-  constructor(code: string, message: string) {
-    super(message)
-    this.code = code
-  }
-}
-
 export const PURPOSE_LABELS: Record<DnsRecord['purpose'], string> = {
   dkim: 'DKIM signature',
   mail_from_mx: 'Bounce handling (MAIL FROM)',
@@ -81,19 +72,7 @@ export const PURPOSE_LABELS: Record<DnsRecord['purpose'], string> = {
   dmarc: 'DMARC policy',
 }
 
-export async function invokeSenderDomains<T>(body: Record<string, unknown>): Promise<T> {
-  const { data, error } = await getSupabase().functions.invoke<T>('sender-domains', { body })
-  if (error) {
-    if (error instanceof FunctionsHttpError) {
-      const payload = (await (error.context as Response).json().catch(() => null)) as {
-        error?: { code?: string; message?: string }
-      } | null
-      throw new FunctionError(payload?.error?.code ?? 'error', payload?.error?.message ?? 'Request failed.')
-    }
-    throw new FunctionError('network', 'Could not reach the server. Check your connection and try again.')
-  }
-  return data as T
-}
+export const invokeSenderDomains = <T,>(body: Record<string, unknown>) => invokeFunction<T>('sender-domains', body)
 
 export const createDomain = (workspaceId: string, domain: string) =>
   invokeSenderDomains<SenderDomain>({ action: 'create', workspace_id: workspaceId, domain })

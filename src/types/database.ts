@@ -53,14 +53,14 @@ isOneToOne: false
                   ]
                 },"campaigns": {
                   Row: {
-                    "ai_assisted": boolean,"completed_at": string | null,"created_at": string,"created_by": string | null,"from_email": string | null,"from_name": string | null,"html_body": string,"id": string,"name": string,"preview_text": string,"reply_to": string | null,"scheduled_at": string | null,"sender_domain_id": string | null,"started_at": string | null,"status": Database["public"]['Enums']["campaign_status"],"subject": string,"template_id": string | null,"text_body": string,"updated_at": string,"workspace_id": string
+                    "ai_assisted": boolean,"completed_at": string | null,"created_at": string,"created_by": string | null,"failure_reason": string | null,"from_email": string | null,"from_name": string | null,"html_body": string,"id": string,"name": string,"preview_text": string,"reply_to": string | null,"scheduled_at": string | null,"sender_domain_id": string | null,"started_at": string | null,"status": Database["public"]['Enums']["campaign_status"],"subject": string,"template_id": string | null,"text_body": string,"updated_at": string,"workspace_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "ai_assisted"?: boolean,"completed_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"from_email"?: string | null,"from_name"?: string | null,"html_body"?: string,"id"?: string,"name": string,"preview_text"?: string,"reply_to"?: string | null,"scheduled_at"?: string | null,"sender_domain_id"?: string | null,"started_at"?: string | null,"status"?: Database["public"]['Enums']["campaign_status"],"subject"?: string,"template_id"?: string | null,"text_body"?: string,"updated_at"?: string,"workspace_id": string
+                    "ai_assisted"?: boolean,"completed_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"failure_reason"?: string | null,"from_email"?: string | null,"from_name"?: string | null,"html_body"?: string,"id"?: string,"name": string,"preview_text"?: string,"reply_to"?: string | null,"scheduled_at"?: string | null,"sender_domain_id"?: string | null,"started_at"?: string | null,"status"?: Database["public"]['Enums']["campaign_status"],"subject"?: string,"template_id"?: string | null,"text_body"?: string,"updated_at"?: string,"workspace_id": string
                   }
                   Update: {
-                    "ai_assisted"?: boolean,"completed_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"from_email"?: string | null,"from_name"?: string | null,"html_body"?: string,"id"?: string,"name"?: string,"preview_text"?: string,"reply_to"?: string | null,"scheduled_at"?: string | null,"sender_domain_id"?: string | null,"started_at"?: string | null,"status"?: Database["public"]['Enums']["campaign_status"],"subject"?: string,"template_id"?: string | null,"text_body"?: string,"updated_at"?: string,"workspace_id"?: string
+                    "ai_assisted"?: boolean,"completed_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"failure_reason"?: string | null,"from_email"?: string | null,"from_name"?: string | null,"html_body"?: string,"id"?: string,"name"?: string,"preview_text"?: string,"reply_to"?: string | null,"scheduled_at"?: string | null,"sender_domain_id"?: string | null,"started_at"?: string | null,"status"?: Database["public"]['Enums']["campaign_status"],"subject"?: string,"template_id"?: string | null,"text_body"?: string,"updated_at"?: string,"workspace_id"?: string
                   }
                   Relationships: [
                     {
@@ -543,7 +543,16 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "claim_send":
+            "acquire_worker_lease":
+{ Args: { "p_holder": string,"p_name": string,"p_seconds": number }; Returns: boolean
+                           },
+"audience_count":
+{ Args: { "p_list_ids": (string)[],"p_workspace_id": string }; Returns: number
+                           },
+"cancel_campaign":
+{ Args: { "p_campaign_id": string }; Returns: undefined
+                           },
+"claim_send":
 { Args: { "p_lease_seconds"?: number,"p_send_id": string }; Returns: Json
                            },
 "complete_send":
@@ -576,6 +585,9 @@ isOneToOne: false
 "mark_stale_sends_ambiguous":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"pause_campaign":
+{ Args: { "p_campaign_id": string }; Returns: undefined
+                           },
 "queue_archive":
 { Args: { "p_msg_id": number }; Returns: boolean
                            },
@@ -592,6 +604,18 @@ isOneToOne: false
                            },
 "record_email_event":
 { Args: { "p_detail"?: Json,"p_event_type": Database["public"]['Enums']["email_event_type"],"p_occurred_at": string,"p_permanent_bounce"?: boolean,"p_provider_event_id": string,"p_ses_message_id": string }; Returns: boolean
+                           },
+"release_worker_lease":
+{ Args: { "p_holder": string,"p_name": string }; Returns: undefined
+                           },
+"resume_campaign":
+{ Args: { "p_campaign_id": string }; Returns: number
+                           },
+"schedule_campaign":
+{ Args: { "p_at": string,"p_campaign_id": string }; Returns: undefined
+                           },
+"start_campaign":
+{ Args: { "p_campaign_id": string }; Returns: number
                            },
 "start_contact_import":
 { Args: { "p_column_mapping"?: Json,"p_consent_source"?: string,"p_list_id"?: string,"p_storage_path": string,"p_total_rows": number,"p_workspace_id": string }; Returns: string

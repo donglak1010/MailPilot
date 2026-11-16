@@ -424,3 +424,18 @@ enabled = true
 # formatted with uppercase keywords, indent 2, max width 180, trailing commas,
 # and column/key alignment. Set to "null" to emit raw, unformatted SQL.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":180,\"commaStyle\":\"trailing\"}"
+
+# ---------------------------------------------------------------------
+# MailPilot Edge Functions that authenticate themselves (no user JWT):
+#   send-worker  -> x-worker-secret header (called by pg_cron via pg_net)
+#   unsubscribe  -> HMAC-signed token (one-click from mail clients)
+#   ses-events   -> SNS message signature + topic ARN
+# ---------------------------------------------------------------------
+[functions.send-worker]
+verify_jwt = false
+
+[functions.unsubscribe]
+verify_jwt = false
+
+[functions.ses-events]
+verify_jwt = false

@@ -15,6 +15,8 @@ const ResetPasswordPage = lazy(() => import('@/features/auth/reset-password-page
 const DashboardPage = lazy(() => import('@/features/dashboard/dashboard-page'))
 const ContactsPage = lazy(() => import('@/features/contacts/contacts-page'))
 const CampaignsPage = lazy(() => import('@/features/campaigns/campaigns-page'))
+const CampaignEditorPage = lazy(() => import('@/features/campaigns/campaign-editor-page'))
+const UnsubscribePage = lazy(() => import('@/features/unsubscribe/unsubscribe-page'))
 const SequencesPage = lazy(() => import('@/features/sequences/sequences-page'))
 const TemplatesPage = lazy(() => import('@/features/templates/templates-page'))
 const AiWriterPage = lazy(() => import('@/features/ai-writer/ai-writer-page'))
@@ -38,6 +40,8 @@ export const router = createBrowserRouter([
       },
       // Opened from the recovery email; handles its own session check
       { path: 'reset-password', element: <ResetPasswordPage /> },
+      // Public, no sign-in: linked from every marketing email
+      { path: 'unsubscribe', element: <UnsubscribePage /> },
 
       // Authenticated app
       {
@@ -57,6 +61,7 @@ export const router = createBrowserRouter([
                   { index: true, element: <DashboardPage /> },
                   { path: 'contacts', element: <ContactsPage /> },
                   { path: 'campaigns', element: <CampaignsPage /> },
+                  { path: 'campaigns/:id', element: <CampaignEditorPage /> },
                   { path: 'sequences', element: <SequencesPage /> },
                   { path: 'templates', element: <TemplatesPage /> },
                   { path: 'ai-writer', element: <AiWriterPage /> },

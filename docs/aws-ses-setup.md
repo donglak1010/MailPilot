@@ -37,21 +37,44 @@ IAM → Users → Create user `mailpilot-ses` (no console access) → Attach pol
 Then Security credentials → Create access key → "Application running outside AWS". Copy the key pair once;
 do not paste it in chat, commits or the frontend `.env`.
 
-## 3. Configuration set (events — used from Phase 4)
+## 3. Configuration set + events (SNS → `ses-events`)
 
-SES → Configuration sets → Create `mailpilot-default`. Event destinations are added in Phase 4 (SNS → webhook).
-Set its name as `SES_CONFIGURATION_SET`; new identities are created with it as their default configuration set.
+1. SNS (region ap-northeast-1) → Topics → Create topic, type **Standard**, name `mailpilot-ses-events`.
+   Copy its ARN → secret `SES_EVENTS_TOPIC_ARN`.
+2. SES → Configuration sets → Create `mailpilot-default` → secret `SES_CONFIGURATION_SET`.
+   New identities are created with it as their default configuration set.
+3. In the configuration set → Event destinations → Add destination:
+   event types **Send, Delivery, Bounce, Complaint, Reject, Delivery delay, Rendering failure, Open, Click**;
+   destination **Amazon SNS** → topic `mailpilot-ses-events`. (Open/click tracking rewrites links and adds a pixel.)
+4. After the functions are deployed (step 4): SNS → the topic → Create subscription,
+   protocol **HTTPS**, endpoint `https://<project-ref>.supabase.co/functions/v1/ses-events`.
+   The function verifies the SNS signature and confirms the subscription automatically
+   (status becomes "Confirmed" within a minute).
 
-## 4. Edge Function secrets
+## 4. Edge Function secrets, Vault and deploy
 
-Hosted project (run from the repo root, values typed by you):
+Hosted project (run from the repo root, values typed by you — never paste them in chat):
 
 ```bash
-supabase secrets set AWS_REGION=ap-northeast-1 SES_CONFIGURATION_SET=mailpilot-default
+supabase secrets set AWS_REGION=ap-northeast-1 SES_CONFIGURATION_SET=mailpilot-default SES_MAX_SEND_RATE=1
 supabase secrets set AWS_ACCESS_KEY_ID=... AWS_SECRET_ACCESS_KEY=...
+supabase secrets set SES_EVENTS_TOPIC_ARN=arn:aws:sns:ap-northeast-1:<account>:mailpilot-ses-events
 supabase secrets set APP_BASE_URL=https://<your-site> ALLOWED_ORIGINS=https://<your-site>,http://localhost:5173
-supabase functions deploy sender-domains
+supabase secrets set PUBLIC_FUNCTIONS_URL=https://<project-ref>.supabase.co/functions/v1
+# two random secrets (e.g. `openssl rand -hex 32`)
+supabase secrets set INTERNAL_WORKER_SECRET=<random-1> UNSUBSCRIBE_SIGNING_SECRET=<random-2>
+supabase functions deploy
 ```
+
+The cron job `mp-send-worker` calls the worker through `pg_net` using two **Vault** secrets.
+Dashboard → SQL editor (hosted project), with the same `<random-1>` as `INTERNAL_WORKER_SECRET`:
+
+```sql
+select vault.create_secret('https://<project-ref>.supabase.co/functions/v1', 'mp_functions_url');
+select vault.create_secret('<random-1>', 'mp_worker_secret');
+```
+
+Until both exist, the worker is never called and nothing is sent.
 
 Local development uses `supabase/functions/.env` (git-ignored). With `SES_MOCK=true` no AWS call is made;
 to test against real SES locally, remove `SES_MOCK` and add the AWS variables, then restart

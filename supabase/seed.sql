@@ -46,3 +46,9 @@ begin
    where w.owner_id = v_user_id
   on conflict (workspace_id, email) do nothing;
 end $$;
+
+-- Send worker wiring for the local stack (see 0004_campaign_sending.sql).
+-- The secret is a fixed local-only value; supabase/functions/.env must use the same
+-- INTERNAL_WORKER_SECRET. The hosted project uses its own random secret.
+select vault.create_secret('http://supabase_kong_MailPilot:8000/functions/v1', 'mp_functions_url');
+select vault.create_secret('local-dev-only-worker-secret-not-for-production-use', 'mp_worker_secret');
