@@ -564,6 +564,12 @@ isOneToOne: false
 "finalize_campaigns":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"finish_contact_import":
+{ Args: { "p_error"?: string,"p_import_id": string }; Returns: undefined
+                           },
+"import_contacts_batch":
+{ Args: { "p_import_id": string,"p_rows": Json }; Returns: Json
+                           },
 "increment_usage":
 { Args: { "p_metric": Database["public"]['Enums']["usage_metric"],"p_qty"?: number,"p_workspace_id": string }; Returns: undefined
                            },
@@ -586,6 +592,9 @@ isOneToOne: false
                            },
 "record_email_event":
 { Args: { "p_detail"?: Json,"p_event_type": Database["public"]['Enums']["email_event_type"],"p_occurred_at": string,"p_permanent_bounce"?: boolean,"p_provider_event_id": string,"p_ses_message_id": string }; Returns: boolean
+                           },
+"start_contact_import":
+{ Args: { "p_column_mapping"?: Json,"p_consent_source"?: string,"p_list_id"?: string,"p_storage_path": string,"p_total_rows": number,"p_workspace_id": string }; Returns: string
                            },
 "unsubscribe_send":
 { Args: { "p_send_id": string,"p_source"?: string }; Returns: boolean

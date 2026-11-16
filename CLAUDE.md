@@ -29,6 +29,13 @@ After any migration: `supabase db reset` then `npm run db:types` and commit the 
 After editing `supabase/config.toml`: `supabase stop && supabase start` (auth settings only reload on restart).
 Local dev login and test accounts are documented at the top of `supabase/seed.sql` (local only).
 
+## SQL gotchas
+
+- Supabase loads **pg-safeupdate** for API sessions: `DELETE`/`UPDATE` without `WHERE` fails
+  ("DELETE requires a WHERE clause") — including inside RPC functions. pgTAP tests do NOT catch
+  this (they run outside PostgREST, and `load 'safeupdate'` is not permitted). Use `TRUNCATE` for
+  temp tables and always write a `WHERE`. Verify new RPCs through the real API (browser or supabase-js).
+
 ## Auth & tenancy (Phase 1)
 
 - `AuthProvider` (onAuthStateChange) → `RequireAuth` / `PublicOnly` guards → `WorkspaceProvider` → `AppShell`.
