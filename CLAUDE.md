@@ -67,6 +67,16 @@ Local dev login and test accounts are documented at the top of `supabase/seed.sq
 - Clients may only make safe campaign status transitions (trigger `guard_campaign_client_update`); `sending`/`sent` are server-only.
 - Server-only RPCs (`enqueue_campaign`, `claim_send`, `complete_send`, `fail_send`, `record_email_event`, `unsubscribe_send`, queue wrappers, …) are executable by `service_role` only.
 
+### Sender domains (Phase 3)
+
+- Edge Function `sender-domains` (actions: account, create, refresh, delete, send_test) is the only writer of
+  `sender_domains` (service role). It checks membership/role itself — RLS is bypassed there.
+- SES v2 via `aws4fetch` (`supabase/functions/_shared/ses.ts`); pure logic in `_shared/sender-domain.ts`
+  (unit-tested by vitest). `SES_MOCK=true` in `supabase/functions/.env` fakes SES locally (refused on hosted).
+- Local functions: `supabase functions serve --env-file supabase/functions/.env`. AWS setup: `docs/aws-ses-setup.md`.
+- All DNS records go on the sending subdomain; never tell users to change their root SPF.
+- Test emails go only to the caller's own auth email and count toward `emails_sent` / daily limit.
+
 ### Send pipeline (Phase 4)
 
 1. `enqueue_campaign(id)` materialises `email_sends` (deduped, suppression-filtered) and pushes `{send_id}` to pgmq.

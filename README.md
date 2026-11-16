@@ -71,7 +71,7 @@ docs/             SRS and design notes
 - [x] Phase 0 — scaffold, app shell, schema + smoke tests
 - [x] Phase 1 — auth, workspace bootstrap, RLS tests, pg_cron jobs
 - [x] Phase 2 — contacts, lists, tags, CSV import, export
-- [ ] Phase 3 — sender domains + SES
+- [~] Phase 3 — sender domains + SES (code done, mock-tested; real SES pending AWS keys — see docs/aws-ses-setup.md)
 - [ ] Phase 4 — campaigns + send pipeline
 - [ ] Phase 5 — sequences, templates, AI writer
 - [ ] Phase 6 — hardening, launch checklist
