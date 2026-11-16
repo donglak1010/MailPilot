@@ -25,6 +25,18 @@ supabase db reset    # rebuild local DB from migrations
 ```
 
 Before finishing any phase: `lint`, `typecheck`, `build` and `test:db` must pass.
+After any migration: `supabase db reset` then `npm run db:types` and commit the regenerated types.
+After editing `supabase/config.toml`: `supabase stop && supabase start` (auth settings only reload on restart).
+Local dev login and test accounts are documented at the top of `supabase/seed.sql` (local only).
+
+## Auth & tenancy (Phase 1)
+
+- `AuthProvider` (onAuthStateChange) → `RequireAuth` / `PublicOnly` guards → `WorkspaceProvider` → `AppShell`.
+- `useWorkspace()` gives `current` workspace + role; selection persisted per user in localStorage.
+- Role checks in the UI (`canManageWorkspace`) are hints only; RLS is the authority. An RLS-filtered
+  update returns 0 rows rather than an error — check `.select()` length after updates.
+- Post-login redirects must go through `safeNextPath()` (open-redirect guard).
+- Browser timezone lists use ICU names (`Asia/Saigon`); always include the stored value (`listTimezones(current)`).
 
 ## Environment notes (Windows dev machine)
 

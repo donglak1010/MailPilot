@@ -41,7 +41,8 @@ Supabase Studio: http://127.0.0.1:54323 · local inbox (Mailpit): http://127.0.0
 | `npm run lint` | ESLint |
 | `npm run build` | Typecheck + production build to `dist/` |
 | `npm run test:db` | pgTAP database tests in `supabase/tests/` (needs `supabase start`) |
-| `supabase db reset` | Recreate local DB from migrations |
+| `npm run db:types` | Regenerate `src/types/database.ts` from the local schema |
+| `supabase db reset` | Recreate local DB from migrations + `supabase/seed.sql` (local dev login is documented there) |
 
 ## Project layout
 
@@ -67,7 +68,7 @@ docs/             SRS and design notes
 ## Status
 
 - [x] Phase 0 — scaffold, app shell, schema + smoke tests
-- [ ] Phase 1 — auth, workspace bootstrap, RLS tests
+- [x] Phase 1 — auth, workspace bootstrap, RLS tests, pg_cron jobs
 - [ ] Phase 2 — contacts, lists, tags, CSV import
 - [ ] Phase 3 — sender domains + SES
 - [ ] Phase 4 — campaigns + send pipeline

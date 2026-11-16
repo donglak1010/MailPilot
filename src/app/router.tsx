@@ -3,6 +3,14 @@ import { createBrowserRouter } from 'react-router'
 import { NotFound } from '@/components/feedback/not-found'
 import { RouteError } from '@/components/feedback/route-error'
 import { AppShell } from '@/components/layout/app-shell'
+import { RootLayout } from '@/components/layout/root-layout'
+import { PublicOnly, RequireAuth } from '@/features/auth/route-guards'
+import { WorkspaceProvider } from '@/features/workspaces/workspace-provider'
+
+const LoginPage = lazy(() => import('@/features/auth/login-page'))
+const SignupPage = lazy(() => import('@/features/auth/signup-page'))
+const ForgotPasswordPage = lazy(() => import('@/features/auth/forgot-password-page'))
+const ResetPasswordPage = lazy(() => import('@/features/auth/reset-password-page'))
 
 const DashboardPage = lazy(() => import('@/features/dashboard/dashboard-page'))
 const ContactsPage = lazy(() => import('@/features/contacts/contacts-page'))
@@ -14,26 +22,52 @@ const SenderDomainsPage = lazy(() => import('@/features/sender-domains/sender-do
 const ReportsPage = lazy(() => import('@/features/analytics/reports-page'))
 const SettingsPage = lazy(() => import('@/features/settings/settings-page'))
 
-// Auth routes (/login, /signup, /reset-password) and the route guard arrive in Phase 1.
 export const router = createBrowserRouter([
   {
-    path: '/',
-    element: <AppShell />,
+    element: <RootLayout />,
     errorElement: <RouteError />,
     children: [
+      // Public auth pages (signed-in users are redirected into the app)
       {
-        errorElement: <RouteError />,
+        element: <PublicOnly />,
         children: [
-          { index: true, element: <DashboardPage /> },
-          { path: 'contacts', element: <ContactsPage /> },
-          { path: 'campaigns', element: <CampaignsPage /> },
-          { path: 'sequences', element: <SequencesPage /> },
-          { path: 'templates', element: <TemplatesPage /> },
-          { path: 'ai-writer', element: <AiWriterPage /> },
-          { path: 'sender-domains', element: <SenderDomainsPage /> },
-          { path: 'reports', element: <ReportsPage /> },
-          { path: 'settings', element: <SettingsPage /> },
-          { path: '*', element: <NotFound /> },
+          { path: 'login', element: <LoginPage /> },
+          { path: 'signup', element: <SignupPage /> },
+          { path: 'forgot-password', element: <ForgotPasswordPage /> },
+        ],
+      },
+      // Opened from the recovery email; handles its own session check
+      { path: 'reset-password', element: <ResetPasswordPage /> },
+
+      // Authenticated app
+      {
+        element: <RequireAuth />,
+        children: [
+          {
+            path: '/',
+            element: (
+              <WorkspaceProvider>
+                <AppShell />
+              </WorkspaceProvider>
+            ),
+            children: [
+              {
+                errorElement: <RouteError />,
+                children: [
+                  { index: true, element: <DashboardPage /> },
+                  { path: 'contacts', element: <ContactsPage /> },
+                  { path: 'campaigns', element: <CampaignsPage /> },
+                  { path: 'sequences', element: <SequencesPage /> },
+                  { path: 'templates', element: <TemplatesPage /> },
+                  { path: 'ai-writer', element: <AiWriterPage /> },
+                  { path: 'sender-domains', element: <SenderDomainsPage /> },
+                  { path: 'reports', element: <ReportsPage /> },
+                  { path: 'settings', element: <SettingsPage /> },
+                  { path: '*', element: <NotFound /> },
+                ],
+              },
+            ],
+          },
         ],
       },
     ],
